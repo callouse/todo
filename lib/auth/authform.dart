@@ -126,6 +126,17 @@ class _AuthFormState extends State<AuthForm> {
                       ),
                       onPressed: (){},
                      ),
+                    ),
+                    SizedBox(height: 10), 
+                    Container(
+                      child: TextButton(
+                        onPressed: (){
+                          setState(() {
+                            isLoginPage =! isLoginPage; 
+                          });
+                        }, 
+                        child: isLoginPage? Text('Not a member yet?'):Text('Already a member?')
+                      ),
                     )
                 ],
               )
