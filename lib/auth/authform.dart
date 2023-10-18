@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; 
 
@@ -16,6 +19,42 @@ class _AuthFormState extends State<AuthForm> {
   var _email = ''; 
   var _password = ''; 
   bool isLoginPage = false; 
+
+  //defining a function to auth the users
+  startAuthentication(){
+    final validity = _formkey.currentState!.validate(); 
+    FocusScope.of(context).unfocus(); 
+    if(validity){
+      _formkey.currentState!.save(); 
+      submitForm(_email, _password, _username); 
+    }
+  }
+
+  submitForm(String email, String password, String username)async{
+    final auth = FirebaseAuth.instance; 
+    UserCredential userCredential;
+    try{
+      if(isLoginPage){
+        userCredential = await auth.signInWithEmailAndPassword(
+          email: email, password: password
+          );
+      }
+      else{
+        userCredential = await auth.createUserWithEmailAndPassword(
+          email: email, password: password
+          );
+          String uid = userCredential.user!.uid; 
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'username': username,
+            'email': email
+          });
+      }
+    }
+    catch(err){
+      print(err); 
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +163,9 @@ class _AuthFormState extends State<AuthForm> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: (){},
+                      onPressed: (){
+                        startAuthentication();
+                      },
                      ),
                     ),
                     SizedBox(height: 10), 
@@ -138,7 +179,7 @@ class _AuthFormState extends State<AuthForm> {
                         child: isLoginPage? Text('Not a member yet?'):Text('Already a member?')
                       ),
                     )
-                ],
+                 ],
               )
             ),
           )
